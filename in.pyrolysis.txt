@@ -1,0 +1,47 @@
+# Initialize Simulation
+
+clear
+units 		real
+dimension	3
+atom_style	hybrid charge bond
+bond_style	harmonic
+
+
+
+read_data	data.PyrolysisProject.txt
+
+#Potential Information
+
+neighbor	2.0 bin
+neigh_modify	every 4 delay 8
+pair_style	reax/c NULL
+pair_coeff	* * ffield.reax.mattsson C H O 
+
+
+# Equilibration Stage 2 (NPT dynamics at 20->500 K)
+fix		1 all nve
+fix 		2 all qeq/reax 1 0.0 10.0 1.0e-6 reax/c
+#fix		3 all bond/break 1 1 3 # every timestep, bond type, breaking distance
+#fix		4 all bond/create 1 1 1 0.8 1 iparam 4 1 jparam 4 1#atom 1, atom 2, timestep, creating distance, bond-type
+#fix		5 all bond/create 1 2 1 0.8 1 iparam 4 1 jparam 1 2
+fix		6 all heat 1 0.00000001
+
+# log-file output
+compute		1 all temp
+thermo_style	custom step temp press
+thermo          100
+timestep	0.5
+
+
+
+dump		pyrolysis all image 1 image.*.jpg type type axes yes 0.2 0.02 zoom 1 view 90 180 
+dump_modify	pyrolysis acolor 1 gray # C
+dump_modify	pyrolysis acolor 2 blue # H
+dump_modify	pyrolysis acolor 3 red # O
+
+#dump		pyrolysis all movie 10 movie.mpg type type
+#dump_modify	pyrolysis acolor 1 gray # C
+#dump_modify	pyrolysis acolor 2 blue # H
+#dump_modify	pyrolysis acolor 3 red # O
+
+run 12	
